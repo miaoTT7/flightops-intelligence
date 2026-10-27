@@ -1,0 +1,181 @@
+version: 2
+
+models:
+  - name: fact_flights
+    description: >-
+      Atomic BTS flight-operation fact table. Its grain is exactly one ingested
+      BTS source record; cancellation, diversion, gate-return, and potentially
+      duplicate reported operations are preserved without aggregation or
+      business-key deduplication.
+    columns:
+      - name: flight_record_key
+        description: >-
+          Technical source-record key inherited unchanged from staging. It is
+          not a unique real-world flight identifier.
+        data_tests: [not_null, unique]
+      - name: flight_date_key
+        description: Calendar key encoded as YYYYMMDD for dim_dates.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_dates')", field: date_key}
+      - name: airline_key
+        description: Deterministic airline dimension key generated from dot_airline_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_airlines')", field: airline_key}
+      - name: origin_airport_key
+        description: Deterministic origin airport key generated from origin_airport_sequence_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_airports')", field: airport_key}
+      - name: destination_airport_key
+        description: Deterministic destination airport key generated from destination_airport_sequence_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_airports')", field: airport_key}
+      - name: source_file_id
+        description: Ingestion source-file identifier retained from staging.
+        data_tests: [not_null]
+      - name: source_row_number
+        description: One-based source CSV row number within source_file_id.
+        data_tests: [not_null]
+      - name: batch_id
+        description: Successful ingestion batch UUID retained from staging.
+        data_tests: [not_null]
+      - name: ingested_at
+        description: Timestamp when the raw source record was inserted.
+        data_tests: [not_null]
+      - name: flight_date
+        description: BTS date of the reported flight operation.
+        data_tests: [not_null]
+      - name: dot_airline_id
+        description: Durable DOT-certified carrier identifier used to derive airline_key.
+        data_tests: [not_null]
+      - name: reporting_airline_code
+        description: Original BTS reporting carrier code retained for audit and analysis.
+        data_tests: [not_null]
+      - name: iata_airline_code
+        description: Original nullable IATA carrier code retained for audit.
+      - name: flight_number
+        description: Reporting carrier flight number retained as a text identifier.
+        data_tests: [not_null]
+      - name: tail_number
+        description: Nullable aircraft tail number used in future rotation analysis.
+      - name: origin_airport_id
+        description: Durable DOT identity of the scheduled origin airport.
+        data_tests: [not_null]
+      - name: origin_airport_sequence_id
+        description: BTS time-specific origin airport version used to derive origin_airport_key.
+        data_tests: [not_null]
+      - name: origin_airport_code
+        description: Original scheduled origin airport code retained for audit.
+        data_tests: [not_null]
+      - name: destination_airport_id
+        description: Durable DOT identity of the scheduled destination airport.
+        data_tests: [not_null]
+      - name: destination_airport_sequence_id
+        description: BTS time-specific destination airport version used to derive destination_airport_key.
+        data_tests: [not_null]
+      - name: destination_airport_code
+        description: Original scheduled destination airport code retained for audit.
+        data_tests: [not_null]
+      - name: scheduled_departure_time
+        description: Scheduled departure local time.
+      - name: scheduled_departure_day_offset
+        description: Raw-2400 marker only; it is not a complete cross-day timestamp offset.
+      - name: actual_departure_time
+        description: Nullable actual gate-departure local time.
+      - name: actual_departure_day_offset
+        description: Raw-2400 marker for actual departure time.
+      - name: departure_delay_minutes_signed
+        description: Signed departure delay; early departures are negative.
+      - name: departure_delay_minutes
+        description: Nonnegative departure delay; early departures are zero.
+      - name: is_departure_delayed_15_minutes
+        description: Nullable BTS indicator for a departure delay of at least 15 minutes.
+      - name: departure_delay_group
+        description: Nullable BTS 15-minute departure-delay interval.
+      - name: departure_time_block
+        description: Scheduled local departure time block.
+      - name: taxi_out_minutes
+        description: Nullable taxi-out duration in minutes.
+      - name: wheels_off_time
+        description: Nullable actual wheels-off local time.
+      - name: wheels_off_day_offset
+        description: Raw-2400 marker for wheels-off time.
+      - name: wheels_on_time
+        description: Nullable actual wheels-on local time.
+      - name: wheels_on_day_offset
+        description: Raw-2400 marker for wheels-on time.
+      - name: taxi_in_minutes
+        description: Nullable taxi-in duration in minutes.
+      - name: scheduled_arrival_time
+        description: Scheduled arrival local time.
+      - name: scheduled_arrival_day_offset
+        description: Raw-2400 marker only; it is not a complete cross-day timestamp offset.
+      - name: actual_arrival_time
+        description: Nullable actual gate-arrival local time.
+      - name: actual_arrival_day_offset
+        description: Raw-2400 marker for actual arrival time.
+      - name: arrival_delay_minutes_signed
+        description: Signed arrival delay; early arrivals are negative.
+      - name: arrival_delay_minutes
+        description: Nonnegative arrival delay; early arrivals are zero.
+      - name: is_arrival_delayed_15_minutes
+        description: Nullable BTS indicator for an arrival delay of at least 15 minutes.
+      - name: arrival_delay_group
+        description: Nullable BTS 15-minute arrival-delay interval.
+      - name: arrival_time_block
+        description: Scheduled local arrival time block.
+      - name: is_cancelled
+        description: BTS cancellation indicator.
+        data_tests: [not_null]
+      - name: cancellation_code
+        description: Nullable BTS cancellation reason code.
+      - name: is_diverted
+        description: BTS diversion indicator.
+        data_tests: [not_null]
+      - name: scheduled_elapsed_minutes
+        description: Scheduled gate-to-gate duration in minutes.
+      - name: actual_elapsed_minutes
+        description: Nullable actual gate-to-gate duration in minutes.
+      - name: air_time_minutes
+        description: Nullable airborne duration in minutes.
+      - name: flight_count
+        description: BTS aggregation weight, expected to equal one per source record.
+      - name: distance_miles
+        description: Scheduled origin-to-destination distance in miles.
+      - name: distance_group
+        description: BTS 250-mile distance interval.
+      - name: carrier_delay_minutes
+        description: Nullable carrier-attributed delay minutes.
+      - name: weather_delay_minutes
+        description: Nullable weather-attributed delay minutes.
+      - name: nas_delay_minutes
+        description: Nullable National Aviation System delay minutes.
+      - name: security_delay_minutes
+        description: Nullable security-attributed delay minutes.
+      - name: late_aircraft_delay_minutes
+        description: Nullable late-arriving-aircraft delay minutes.
+      - name: first_departure_time
+        description: Nullable first gate-departure local time before a gate return.
+      - name: first_departure_day_offset
+        description: Raw-2400 marker for first departure time.
+      - name: total_added_ground_time_minutes
+        description: Nullable total additional ground time for gate-return activity.
+      - name: longest_added_ground_time_minutes
+        description: Nullable longest additional ground-time interval.
+      - name: diverted_airport_landings
+        description: Nullable number of diverted-airport landings.
+      - name: diversion_reached_destination
+        description: Nullable indicator that a diverted flight reached its scheduled destination.
+      - name: diversion_actual_elapsed_minutes
+        description: Nullable elapsed time for a diverted flight reaching its destination.
+      - name: diversion_arrival_delay_minutes
+        description: Nullable signed arrival delay for a diverted flight reaching its destination.
+      - name: diversion_distance_miles
+        description: Nullable distance from scheduled destination to final diverted airport.

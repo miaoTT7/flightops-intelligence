@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: dim_airports
+    description: >-
+      Airport dimension at one row per BTS airport_sequence_id. Origin and
+      destination observations are standardized into one role-playing
+      dimension; conflicting source attributes are rejected by data tests.
+    columns:
+      - name: airport_key
+        description: >-
+          Deterministic warehouse key generated from airport_sequence_id.
+        data_tests:
+          - not_null
+          - unique
+      - name: airport_sequence_id
+        description: >-
+          Natural version key assigned by US DOT to identify an airport and
+          its attributes at a specific point in time.
+        data_tests:
+          - not_null
+          - unique
+      - name: airport_id
+        description: >-
+          Durable US DOT airport identifier used for analysis across time.
+          Multiple sequence IDs may legitimately share one airport ID.
+        data_tests: [not_null]
+      - name: airport_code
+        description: Three-letter airport code observed for this source version.
+        data_tests: [not_null]
+      - name: city_market_id
+        description: US DOT city-market identifier for grouping airports serving the same market.
+      - name: city_name
+        description: BTS city name associated with this airport version.
+      - name: state_code
+        description: BTS state or territory code associated with this airport version.
+      - name: state_fips
+        description: >-
+          State or territory FIPS identifier preserved as text so leading
+          zeros, such as 01, are not lost.
+      - name: state_name
+        description: BTS state or territory name associated with this airport version.
+      - name: world_area_code
+        description: BTS world area code associated with this airport version.

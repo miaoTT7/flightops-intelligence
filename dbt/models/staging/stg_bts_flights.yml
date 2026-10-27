@@ -1,0 +1,230 @@
+version: 2
+
+models:
+  - name: stg_bts_flights
+    description: >-
+      Typed, analysis-ready projection of BTS on-time performance data. Its
+      grain is exactly one ingested source CSV row; it does not filter or
+      deduplicate raw records. The model is a view over bts_raw.
+    columns:
+      - name: flight_record_key
+        description: >-
+          Deterministic technical row key from source_file_id and
+          source_row_number. It is stable within the current ingestion
+          lineage, but may differ across independently rebuilt databases
+          where source_file_id values are assigned in another order. It is
+          not a business flight identifier.
+        data_tests:
+          - not_null
+          - unique
+      - name: source_file_id
+        description: "Source: source_file_id. Identifies the deduplicated CSV content."
+        data_tests: [not_null]
+      - name: batch_id
+        description: "Source: batch_id. Successful ingestion batch UUID."
+        data_tests: [not_null]
+      - name: source_row_number
+        description: "Source: source_row_number. One-based row position within the source CSV."
+        data_tests: [not_null]
+      - name: ingested_at
+        description: "Source: ingested_at. Raw-row ingestion timestamp."
+        data_tests: [not_null]
+      - name: flight_year
+        description: "Source: year; converted to smallint."
+        data_tests: [not_null]
+      - name: flight_quarter
+        description: "Source: quarter; converted to smallint."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [1, 2, 3, 4], quote: false}
+      - name: flight_month
+        description: "Source: month; converted to smallint."
+        data_tests: [not_null]
+      - name: day_of_month
+        description: "Source: day_of_month; converted to smallint."
+        data_tests: [not_null]
+      - name: day_of_week
+        description: "Source: day_of_week; BTS uses 1=Monday through 7=Sunday."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [1, 2, 3, 4, 5, 6, 7], quote: false}
+      - name: flight_date
+        description: "Source: flight_date; converted from YYYY-MM-DD text to date."
+        data_tests: [not_null]
+      - name: reporting_airline_code
+        description: "Source: reporting_airline. BTS unique carrier code recommended for analysis across years."
+        data_tests: [not_null]
+      - name: dot_airline_id
+        description: "Source: dot_id_reporting_airline; DOT identifier for a carrier reporting under the same DOT certificate, converted to integer."
+        data_tests: [not_null]
+      - name: iata_airline_code
+        description: "Source: iata_code_reporting_airline. IATA code; it can be reused by different carriers over time and is not a durable unique key."
+        data_tests: [not_null]
+      - name: tail_number
+        description: "Source: tail_number. Nullable, particularly for cancelled flights."
+      - name: flight_number
+        description: "Source: flight_number_reporting_airline; retained as text because it is an identifier."
+        data_tests: [not_null]
+      - name: origin_airport_id
+        description: "Source: origin_airport_id; stable DOT airport identifier for analysis across years, converted to integer."
+        data_tests: [not_null]
+      - name: origin_airport_sequence_id
+        description: "Source: origin_airport_seq_id; identifies an airport and its attributes at a specific point in time, converted to integer."
+      - name: origin_city_market_id
+        description: "Source: origin_city_market_id; DOT city-market identifier used to group airports serving the same market."
+      - name: origin_airport_code
+        description: "Source: origin. Three-letter origin airport code."
+        data_tests: [not_null]
+      - name: origin_city_name
+        description: "Source: origin_city_name."
+      - name: origin_state_code
+        description: "Source: origin_state."
+      - name: origin_state_fips
+        description: "Source: origin_state_fips; preserved as a two-character identifier so leading zeros are retained."
+      - name: origin_state_name
+        description: "Source: origin_state_name."
+      - name: origin_world_area_code
+        description: "Source: origin_wac; converted to smallint."
+      - name: destination_airport_id
+        description: "Source: dest_airport_id; stable DOT airport identifier for analysis across years, converted to integer."
+        data_tests: [not_null]
+      - name: destination_airport_sequence_id
+        description: "Source: dest_airport_seq_id; identifies an airport and its attributes at a specific point in time, converted to integer."
+      - name: destination_city_market_id
+        description: "Source: dest_city_market_id; DOT city-market identifier used to group airports serving the same market."
+      - name: destination_airport_code
+        description: "Source: dest. Three-letter destination airport code."
+        data_tests: [not_null]
+      - name: destination_city_name
+        description: "Source: dest_city_name."
+      - name: destination_state_code
+        description: "Source: dest_state."
+      - name: destination_state_fips
+        description: "Source: dest_state_fips; preserved as a two-character identifier so leading zeros are retained."
+      - name: destination_state_name
+        description: "Source: dest_state_name."
+      - name: destination_world_area_code
+        description: "Source: dest_wac; converted to smallint."
+      - name: scheduled_departure_time
+        description: "Source: crs_dep_time; scheduled local airport time converted from HHMM."
+        data_tests: [not_null]
+      - name: scheduled_departure_day_offset
+        description: >-
+          Source: crs_dep_time. Equals 1 only when raw HHMM is 2400;
+          otherwise 0. This preserves the BTS 2400 marker only and does not
+          establish a complete cross-day flight timestamp.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [0, 1], quote: false}
+      - name: actual_departure_time
+        description: "Source: dep_time; actual local gate-departure time, nullable when no final departure occurred."
+      - name: actual_departure_day_offset
+        description: "Source: dep_time; preserves raw 2400 as 00:00 plus offset 1, but does not infer other cross-day timestamps."
+      - name: departure_delay_minutes_signed
+        description: "Source: dep_delay; signed minutes, so early departures are negative."
+      - name: departure_delay_minutes
+        description: "Source: dep_delay_minutes; early departures are represented as zero."
+      - name: is_departure_delayed_15_minutes
+        description: "Source: dep_del15; boolean, nullable when departure outcome is unavailable."
+      - name: departure_delay_group
+        description: "Source: departure_delay_groups; BTS 15-minute delay interval from below -15 through above 180 minutes."
+      - name: departure_time_block
+        description: "Source: dep_time_blk; scheduled departure local-time hourly interval."
+      - name: taxi_out_minutes
+        description: "Source: taxi_out; converted to integer minutes."
+      - name: wheels_off_time
+        description: "Source: wheels_off; actual wheels-off local airport time converted from HHMM."
+      - name: wheels_off_day_offset
+        description: "Source: wheels_off; preserves the raw 2400 marker only and does not infer other cross-day timestamps."
+      - name: wheels_on_time
+        description: "Source: wheels_on; actual wheels-on local airport time converted from HHMM."
+      - name: wheels_on_day_offset
+        description: "Source: wheels_on; preserves the raw 2400 marker only and does not infer other cross-day timestamps."
+      - name: taxi_in_minutes
+        description: "Source: taxi_in; converted to integer minutes."
+      - name: scheduled_arrival_time
+        description: "Source: crs_arr_time; scheduled local airport arrival time converted from HHMM."
+        data_tests: [not_null]
+      - name: scheduled_arrival_day_offset
+        description: >-
+          Source: crs_arr_time. Equals 1 only when raw HHMM is 2400;
+          otherwise 0. This preserves the BTS 2400 marker only and does not
+          establish a complete cross-day flight timestamp.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [0, 1], quote: false}
+      - name: actual_arrival_time
+        description: "Source: arr_time; actual local gate-arrival time, nullable for cancelled flights and diverted flights that do not reach the scheduled destination."
+      - name: actual_arrival_day_offset
+        description: "Source: arr_time; preserves raw 2400 as 00:00 plus offset 1, but does not infer other cross-day timestamps."
+      - name: arrival_delay_minutes_signed
+        description: "Source: arr_delay; signed minutes, so early arrivals are negative."
+      - name: arrival_delay_minutes
+        description: "Source: arr_delay_minutes; early arrivals are represented as zero."
+      - name: is_arrival_delayed_15_minutes
+        description: "Source: arr_del15; boolean, nullable when arrival outcome is unavailable."
+      - name: arrival_delay_group
+        description: "Source: arrival_delay_groups; BTS 15-minute delay interval from below -15 through above 180 minutes."
+      - name: arrival_time_block
+        description: "Source: arr_time_blk; scheduled arrival local-time hourly interval."
+      - name: is_cancelled
+        description: "Source: cancelled; converted from 0.00/1.00 to boolean."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [true, false], quote: false}
+      - name: cancellation_code
+        description: "Source: cancellation_code; A=carrier, B=weather, C=National Aviation System, D=security; null for non-cancelled flights."
+        data_tests:
+          - accepted_values:
+              arguments: {values: [A, B, C, D]}
+      - name: is_diverted
+        description: "Source: diverted; converted from 0.00/1.00 to boolean."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [true, false], quote: false}
+      - name: scheduled_elapsed_minutes
+        description: "Source: crs_elapsed_time; converted to integer minutes."
+      - name: actual_elapsed_minutes
+        description: "Source: actual_elapsed_time; gate-to-gate minutes, null for diverted flights under the BTS reporting definition."
+      - name: air_time_minutes
+        description: "Source: air_time; converted to integer minutes."
+      - name: flight_count
+        description: "Source: flights; BTS aggregation weight converted to smallint."
+      - name: distance_miles
+        description: "Source: distance; converted to numeric miles."
+      - name: distance_group
+        description: "Source: distance_group; 250-mile distance interval for the flight segment, converted to smallint."
+      - name: carrier_delay_minutes
+        description: "Source: carrier_delay; nullable when BTS cause-delay reporting does not apply."
+      - name: weather_delay_minutes
+        description: "Source: weather_delay; nullable when BTS cause-delay reporting does not apply."
+      - name: nas_delay_minutes
+        description: "Source: nas_delay; nullable when BTS cause-delay reporting does not apply."
+      - name: security_delay_minutes
+        description: "Source: security_delay; nullable when BTS cause-delay reporting does not apply."
+      - name: late_aircraft_delay_minutes
+        description: "Source: late_aircraft_delay; nullable when BTS cause-delay reporting does not apply."
+      - name: first_departure_time
+        description: "Source: first_dep_time; first gate departure time at the origin before any gate return, converted from local HHMM."
+      - name: first_departure_day_offset
+        description: "Source: first_dep_time; preserves the raw 2400 marker only and does not infer other cross-day timestamps."
+      - name: total_added_ground_time_minutes
+        description: "Source: total_add_g_time; total ground time away from the gate for a gate return or cancelled flight."
+      - name: longest_added_ground_time_minutes
+        description: "Source: longest_add_g_time; longest period away from the gate for a gate return or cancelled flight."
+      - name: diverted_airport_landings
+        description: "Source: div_airport_landings; converted to smallint."
+      - name: diversion_reached_destination
+        description: "Source: div_reached_dest; converted to nullable boolean."
+      - name: diversion_actual_elapsed_minutes
+        description: "Source: div_actual_elapsed_time; elapsed minutes for a diverted flight that reaches its scheduled destination."
+      - name: diversion_arrival_delay_minutes
+        description: "Source: div_arr_delay; signed arrival-delay minutes for a diverted flight that reaches its scheduled destination."
+      - name: diversion_distance_miles
+        description: "Source: div_distance; miles from the scheduled destination to the final diverted airport, or zero when the diverted flight reaches its scheduled destination."

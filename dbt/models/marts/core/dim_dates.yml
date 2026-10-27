@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: dim_dates
+    description: >-
+      Calendar dimension covering every date from 2024-01-01 through
+      2025-12-31. Its grain is exactly one row per calendar date.
+    columns:
+      - name: date_key
+        description: Calendar date key encoded as the integer YYYYMMDD.
+        data_tests:
+          - not_null
+          - unique
+      - name: date_day
+        description: Calendar date represented with the PostgreSQL date type.
+        data_tests:
+          - not_null
+          - unique
+      - name: year
+        description: Four-digit calendar year.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [2024, 2025], quote: false}
+      - name: quarter
+        description: Calendar quarter numbered from 1 through 4.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [1, 2, 3, 4], quote: false}
+      - name: month_number
+        description: Calendar month numbered from 1 through 12.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], quote: false}
+      - name: month_name
+        description: English calendar month name corresponding to month_number.
+        data_tests: [not_null]
+      - name: day_of_month
+        description: Day number within the calendar month.
+        data_tests: [not_null]
+      - name: day_of_week_number
+        description: ISO weekday number, where Monday is 1 and Sunday is 7.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [1, 2, 3, 4, 5, 6, 7], quote: false}
+      - name: day_of_week_name
+        description: English weekday name corresponding to day_of_week_number.
+        data_tests: [not_null]
+      - name: is_weekend
+        description: True only for Saturday and Sunday.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [true, false], quote: false}

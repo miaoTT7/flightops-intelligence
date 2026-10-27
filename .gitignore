@@ -1,0 +1,49 @@
+# Raw and generated data (keep directory placeholders if added later)
+data/raw/**
+data/interim/**
+data/processed/**
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# Python environments and caches
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Packaging and notebooks
+build/
+dist/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Editors, operating systems, and temporary files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.tmp
+
+# Local Docker overrides
+compose.override.yaml
+
+# dbt local credentials and generated artifacts
+dbt/profiles.yml
+dbt/.user.yml
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/package-lock.yml
+

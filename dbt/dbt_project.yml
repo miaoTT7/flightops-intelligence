@@ -1,0 +1,27 @@
+name: flightops_intelligence
+version: 1.0.0
+config-version: 2
+
+profile: flightops_intelligence
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+analysis-paths: ["analyses"]
+
+target-path: target
+clean-targets:
+  - target
+  - dbt_packages
+  - logs
+
+require-dbt-version: [">=1.11.0", "<1.12.0"]
+
+models:
+  flightops_intelligence:
+    marts:
+      +materialized: table
+      +schema: marts
+

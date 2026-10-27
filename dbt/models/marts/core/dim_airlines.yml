@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: dim_airlines
+    description: >-
+      Airline dimension at one row per DOT airline identifier. It retains the
+      BTS reporting and IATA codes observed for that DOT-certified carrier;
+      source mapping conflicts are rejected rather than arbitrarily resolved.
+    columns:
+      - name: airline_key
+        description: Deterministic warehouse key generated from dot_airline_id.
+        data_tests:
+          - not_null
+          - unique
+      - name: dot_airline_id
+        description: >-
+          Natural key assigned by US DOT to a carrier reporting under the same
+          DOT certificate, regardless of code, name, or holding company.
+        data_tests:
+          - not_null
+          - unique
+      - name: reporting_airline_code
+        description: >-
+          BTS unique carrier code recommended by BTS for analysis across a
+          range of years.
+        data_tests: [not_null]
+      - name: iata_airline_code
+        description: >-
+          IATA-assigned carrier code. It remains nullable and is not a durable
+          natural key because an IATA code can be reassigned over time.

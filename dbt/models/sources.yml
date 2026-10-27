@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: bts_raw
+    description: >-
+      Immutable BTS Reporting Carrier On-Time Performance rows loaded by the
+      Phase 1.2 Python ingestion pipeline. dbt reads this source but does not
+      own or modify it.
+    database: "{{ env_var('POSTGRES_DB') }}"
+    schema: raw
+    tables:
+      - name: bts_on_time_performance
+        description: >-
+          One row per BTS-reported domestic nonstop flight operation. The 109
+          BTS fields remain text at the raw layer, with source and batch
+          lineage added by ingestion.
+        columns:
+          - name: source_file_id
+            description: Foreign key to ingestion.source_file.
+          - name: batch_id
+            description: Successful ingestion batch that inserted this row.
+          - name: source_row_number
+            description: One-based data-row position in the source CSV.
+          - name: ingested_at
+            description: Timestamp when PostgreSQL inserted the raw row.
+
