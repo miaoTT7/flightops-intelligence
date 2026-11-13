@@ -53,7 +53,9 @@ select
     cancellation_code,
     is_diverted,
     scheduled_elapsed_minutes,
+    is_scheduled_elapsed_time_valid,
     actual_elapsed_minutes,
+    is_actual_elapsed_time_valid,
     air_time_minutes,
     flight_count,
     distance_miles,
@@ -72,6 +74,7 @@ select
     diverted_airport_landings,
     diversion_reached_destination,
     diversion_actual_elapsed_minutes,
+    is_diversion_actual_elapsed_time_valid,
     diversion_arrival_delay_minutes,
     diversion_distance_miles
 from {{ ref('stg_bts_flights') }}

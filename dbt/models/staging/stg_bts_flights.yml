@@ -65,8 +65,7 @@ models:
       - name: tail_number
         description: "Source: tail_number. Nullable, particularly for cancelled flights."
       - name: flight_number
-        description: "Source: flight_number_reporting_airline; retained as text because it is an identifier."
-        data_tests: [not_null]
+        description: "Source: flight_number_reporting_airline; retained as a text identifier and nullable when the BTS source field is empty. Approved source missingness is governed by an exact exception-set test."
       - name: origin_airport_id
         description: "Source: origin_airport_id; stable DOT airport identifier for analysis across years, converted to integer."
         data_tests: [not_null]
@@ -189,9 +188,13 @@ models:
           - accepted_values:
               arguments: {values: [true, false], quote: false}
       - name: scheduled_elapsed_minutes
-        description: "Source: crs_elapsed_time; converted to integer minutes."
+        description: "Source: crs_elapsed_time; parseable source value converted to integer minutes and preserved even when negative."
+      - name: is_scheduled_elapsed_time_valid
+        description: "TRUE for a present nonnegative scheduled duration, FALSE for a present negative duration, and NULL when the source duration is missing."
       - name: actual_elapsed_minutes
-        description: "Source: actual_elapsed_time; gate-to-gate minutes, null for diverted flights under the BTS reporting definition."
+        description: "Source: actual_elapsed_time; parseable gate-to-gate minutes preserved even when negative; commonly null for diverted flights under the BTS reporting definition."
+      - name: is_actual_elapsed_time_valid
+        description: "TRUE for a present nonnegative actual duration, FALSE for a present negative duration, and NULL when the source duration is missing."
       - name: air_time_minutes
         description: "Source: air_time; converted to integer minutes."
       - name: flight_count
@@ -223,7 +226,9 @@ models:
       - name: diversion_reached_destination
         description: "Source: div_reached_dest; converted to nullable boolean."
       - name: diversion_actual_elapsed_minutes
-        description: "Source: div_actual_elapsed_time; elapsed minutes for a diverted flight that reaches its scheduled destination."
+        description: "Source: div_actual_elapsed_time; parseable elapsed minutes preserved even when negative."
+      - name: is_diversion_actual_elapsed_time_valid
+        description: "TRUE for a present nonnegative diversion duration, FALSE for a present negative duration, and NULL when the source duration is missing."
       - name: diversion_arrival_delay_minutes
         description: "Source: div_arr_delay; signed arrival-delay minutes for a diverted flight that reaches its scheduled destination."
       - name: diversion_distance_miles

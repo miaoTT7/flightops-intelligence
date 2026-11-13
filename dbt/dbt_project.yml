@@ -19,6 +19,11 @@ clean-targets:
 
 require-dbt-version: [">=1.11.0", "<1.12.0"]
 
+vars:
+  # Deliberately invalid defaults: callers must provide an explicit single month.
+  phase3a_batch_start_date: ""
+  phase3a_batch_end_date: ""
+
 models:
   flightops_intelligence:
     marts:

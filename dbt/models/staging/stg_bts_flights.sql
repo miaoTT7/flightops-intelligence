@@ -152,8 +152,16 @@ select
     case when cancelled_text ~ '^1([.]0+)?$' then true when cancelled_text ~ '^0([.]0+)?$' then false end as is_cancelled,
     cancellation_code,
     case when diverted_text ~ '^1([.]0+)?$' then true when diverted_text ~ '^0([.]0+)?$' then false end as is_diverted,
-    case when scheduled_elapsed_time_text ~ '^[0-9]+([.]0+)?$' then scheduled_elapsed_time_text::numeric::integer end as scheduled_elapsed_minutes,
-    case when actual_elapsed_time_text ~ '^[0-9]+([.]0+)?$' then actual_elapsed_time_text::numeric::integer end as actual_elapsed_minutes,
+    case when scheduled_elapsed_time_text ~ '^[+-]?[0-9]+([.]0+)?$' then scheduled_elapsed_time_text::numeric::integer end as scheduled_elapsed_minutes,
+    case
+        when scheduled_elapsed_time_text is null then null
+        when scheduled_elapsed_time_text ~ '^[+-]?[0-9]+([.]0+)?$' then scheduled_elapsed_time_text::numeric >= 0
+    end as is_scheduled_elapsed_time_valid,
+    case when actual_elapsed_time_text ~ '^[+-]?[0-9]+([.]0+)?$' then actual_elapsed_time_text::numeric::integer end as actual_elapsed_minutes,
+    case
+        when actual_elapsed_time_text is null then null
+        when actual_elapsed_time_text ~ '^[+-]?[0-9]+([.]0+)?$' then actual_elapsed_time_text::numeric >= 0
+    end as is_actual_elapsed_time_valid,
     case when air_time_text ~ '^[0-9]+([.]0+)?$' then air_time_text::numeric::integer end as air_time_minutes,
     case when flights_text ~ '^[0-9]+([.]0+)?$' then flights_text::numeric::smallint end as flight_count,
     case when distance_text ~ '^[0-9]+([.][0-9]+)?$' then distance_text::numeric(10, 2) end as distance_miles,
@@ -171,7 +179,11 @@ select
     case when longest_added_ground_time_text ~ '^[0-9]+([.]0+)?$' then longest_added_ground_time_text::numeric::integer end as longest_added_ground_time_minutes,
     case when diverted_airport_landings_text ~ '^[0-9]+$' then diverted_airport_landings_text::smallint end as diverted_airport_landings,
     case when diversion_reached_destination_text ~ '^1([.]0+)?$' then true when diversion_reached_destination_text ~ '^0([.]0+)?$' then false end as diversion_reached_destination,
-    case when diversion_actual_elapsed_time_text ~ '^[0-9]+([.]0+)?$' then diversion_actual_elapsed_time_text::numeric::integer end as diversion_actual_elapsed_minutes,
+    case when diversion_actual_elapsed_time_text ~ '^[+-]?[0-9]+([.]0+)?$' then diversion_actual_elapsed_time_text::numeric::integer end as diversion_actual_elapsed_minutes,
+    case
+        when diversion_actual_elapsed_time_text is null then null
+        when diversion_actual_elapsed_time_text ~ '^[+-]?[0-9]+([.]0+)?$' then diversion_actual_elapsed_time_text::numeric >= 0
+    end as is_diversion_actual_elapsed_time_valid,
     case when diversion_arrival_delay_text ~ '^[+-]?[0-9]+([.]0+)?$' then diversion_arrival_delay_text::numeric::integer end as diversion_arrival_delay_minutes,
     case when diversion_distance_text ~ '^[0-9]+([.][0-9]+)?$' then diversion_distance_text::numeric(10, 2) end as diversion_distance_miles
 from cleaned

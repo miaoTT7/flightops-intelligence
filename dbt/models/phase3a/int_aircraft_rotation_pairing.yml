@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: int_aircraft_rotation_pairing
+    description: >-
+      One row per UTC flight record. Uses the immediately following scheduled
+      UTC flight for the same reported tail as the only candidate and retains
+      every unmatched record with an explicit exclusion reason.
+    columns:
+      - name: previous_flight_record_key
+        data_tests: [not_null, unique]
+      - name: rotation_match_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [matched, unmatched]
+      - name: rotation_exclusion_reason
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - matched
+                  - missing_tail_number
+                  - previous_cancelled
+                  - previous_diverted
+                  - previous_scheduled_departure_unresolved
+                  - previous_scheduled_arrival_unresolved
+                  - previous_actual_arrival_unvalidated
+                  - ambiguous_scheduled_departure_tie
+                  - no_next_flight_in_data
+                  - next_cancelled
+                  - next_diverted
+                  - next_scheduled_departure_unresolved
+                  - next_scheduled_arrival_unresolved
+                  - next_actual_departure_unvalidated
+                  - ambiguous_next_scheduled_departure_tie
+                  - airport_discontinuity
+                  - nonpositive_scheduled_turnaround
+                  - below_primary_turnaround_window
+                  - above_primary_turnaround_window
+                  - negative_actual_ground_time
+
+

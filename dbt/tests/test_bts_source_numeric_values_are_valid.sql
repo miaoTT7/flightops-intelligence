@@ -37,8 +37,8 @@ numeric_values as (
             ('arr_delay', arr_delay, '^[+-]?[0-9]+([.]0+)?$', -2147483648::numeric, 2147483647::numeric),
             ('arr_delay_minutes', arr_delay_minutes, '^[0-9]+([.]0+)?$', 0::numeric, 2147483647::numeric),
             ('arrival_delay_groups', arrival_delay_groups, '^[+-]?[0-9]+([.]0+)?$', -32768::numeric, 32767::numeric),
-            ('crs_elapsed_time', crs_elapsed_time, '^[0-9]+([.]0+)?$', 0::numeric, 2147483647::numeric),
-            ('actual_elapsed_time', actual_elapsed_time, '^[0-9]+([.]0+)?$', 0::numeric, 2147483647::numeric),
+            ('crs_elapsed_time', crs_elapsed_time, '^[+-]?[0-9]+([.]0+)?$', -2147483648::numeric, 2147483647::numeric),
+            ('actual_elapsed_time', actual_elapsed_time, '^[+-]?[0-9]+([.]0+)?$', -2147483648::numeric, 2147483647::numeric),
             ('air_time', air_time, '^[0-9]+([.]0+)?$', 0::numeric, 2147483647::numeric),
             ('flights', flights, '^[0-9]+([.]0+)?$', 0::numeric, 32767::numeric),
             ('distance', distance, '^[0-9]+([.][0-9]+)?$', 0::numeric, 99999999.99::numeric),
@@ -51,7 +51,7 @@ numeric_values as (
             ('total_add_g_time', total_add_g_time, '^[0-9]+([.]0+)?$', 0::numeric, 2147483647::numeric),
             ('longest_add_g_time', longest_add_g_time, '^[0-9]+([.]0+)?$', 0::numeric, 2147483647::numeric),
             ('div_airport_landings', div_airport_landings, '^[0-9]+$', 0::numeric, 32767::numeric),
-            ('div_actual_elapsed_time', div_actual_elapsed_time, '^[0-9]+([.]0+)?$', 0::numeric, 2147483647::numeric),
+            ('div_actual_elapsed_time', div_actual_elapsed_time, '^[+-]?[0-9]+([.]0+)?$', -2147483648::numeric, 2147483647::numeric),
             ('div_arr_delay', div_arr_delay, '^[+-]?[0-9]+([.]0+)?$', -2147483648::numeric, 2147483647::numeric),
             ('div_distance', div_distance, '^[0-9]+([.][0-9]+)?$', 0::numeric, 99999999.99::numeric)
     ) as fields(field_name, raw_value, allowed_pattern, minimum_value, maximum_value)

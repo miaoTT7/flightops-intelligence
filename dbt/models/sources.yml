@@ -1,6 +1,14 @@
 version: 2
 
 sources:
+  - name: ingestion_metadata
+    description: Read-only ingestion lineage used to audit stable source-file exceptions.
+    database: "{{ env_var('POSTGRES_DB') }}"
+    schema: ingestion
+    tables:
+      - name: source_file
+        description: One row per deduplicated BTS CSV content item and source period.
+
   - name: bts_raw
     description: >-
       Immutable BTS Reporting Carrier On-Time Performance rows loaded by the

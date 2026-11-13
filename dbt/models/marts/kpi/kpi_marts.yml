@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: mart_monthly_overall_performance
+    description: One row per calendar month with additive BTS operational components and safely derived KPI ratios.
+    columns:
+      - name: month_key
+        description: Unique calendar month key in YYYYMM format.
+        data_tests: [not_null, unique]
+      - name: month_start_date
+        description: First calendar day of the reporting month.
+        data_tests: [not_null, unique]
+      - name: reported_flights
+        description: Sum of BTS flight_count across all reported source operations.
+        data_tests: [not_null]
+      - name: official_arrival_ontime_rate
+        description: On-time arrival operations divided by all reported operations.
+      - name: observed_arrival_ontime_rate
+        description: On-time arrivals divided by operations with a non-null arrival 15-minute indicator.
+      - name: departure_delayed_15_rate
+        description: Departure delays of at least 15 minutes divided by operations with a departure indicator.
+
+  - name: mart_monthly_airline_performance
+    description: One row per calendar month and DOT airline, using the same additive components as the overall mart.
+    columns:
+      - name: airline_month_key
+        description: Deterministic key for calendar month and airline_key.
+        data_tests: [not_null, unique]
+      - name: month_start_date
+        data_tests: [not_null]
+      - name: airline_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_airlines')", field: airline_key}
+      - name: reported_flights
+        data_tests: [not_null]
+
+  - name: mart_monthly_origin_airport_performance
+    description: One row per calendar month and scheduled origin airport version; arrival metrics describe flights departing that origin.
+    columns:
+      - name: origin_airport_month_key
+        description: Deterministic key for calendar month and origin_airport_key.
+        data_tests: [not_null, unique]
+      - name: month_start_date
+        data_tests: [not_null]
+      - name: origin_airport_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_airports')", field: airport_key}
+      - name: reported_flights
+        data_tests: [not_null]
+
+  - name: mart_monthly_route_performance
+    description: One row per calendar month and directional scheduled origin-destination airport-version pair.
+    columns:
+      - name: route_month_key
+        description: Deterministic key for calendar month, origin_airport_key, and destination_airport_key.
+        data_tests: [not_null, unique]
+      - name: month_start_date
+        data_tests: [not_null]
+      - name: origin_airport_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_airports')", field: airport_key}
+      - name: destination_airport_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_airports')", field: airport_key}
+      - name: reported_flights
+        data_tests: [not_null]

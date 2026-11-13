@@ -61,8 +61,7 @@ models:
       - name: iata_airline_code
         description: Original nullable IATA carrier code retained for audit.
       - name: flight_number
-        description: Reporting carrier flight number retained as a text identifier.
-        data_tests: [not_null]
+        description: Reporting carrier flight number retained as a nullable text identifier; rare BTS source missingness is governed by an exact exception-set test.
       - name: tail_number
         description: Nullable aircraft tail number used in future rotation analysis.
       - name: origin_airport_id
@@ -140,9 +139,13 @@ models:
         description: BTS diversion indicator.
         data_tests: [not_null]
       - name: scheduled_elapsed_minutes
-        description: Scheduled gate-to-gate duration in minutes.
+        description: Scheduled gate-to-gate minutes; source anomalies remain preserved.
+      - name: is_scheduled_elapsed_time_valid
+        description: TRUE for a present nonnegative value, FALSE for a negative value, and NULL when missing.
       - name: actual_elapsed_minutes
-        description: Nullable actual gate-to-gate duration in minutes.
+        description: Nullable actual gate-to-gate minutes; source anomalies remain preserved.
+      - name: is_actual_elapsed_time_valid
+        description: TRUE for a present nonnegative value, FALSE for a negative value, and NULL when missing.
       - name: air_time_minutes
         description: Nullable airborne duration in minutes.
       - name: flight_count
@@ -174,7 +177,9 @@ models:
       - name: diversion_reached_destination
         description: Nullable indicator that a diverted flight reached its scheduled destination.
       - name: diversion_actual_elapsed_minutes
-        description: Nullable elapsed time for a diverted flight reaching its destination.
+        description: Nullable diversion elapsed minutes; source anomalies remain preserved.
+      - name: is_diversion_actual_elapsed_time_valid
+        description: TRUE for a present nonnegative value, FALSE for a negative value, and NULL when missing.
       - name: diversion_arrival_delay_minutes
         description: Nullable signed arrival delay for a diverted flight reaching its destination.
       - name: diversion_distance_miles

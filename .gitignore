@@ -47,3 +47,6 @@ dbt/logs/
 dbt/dbt_packages/
 dbt/package-lock.yml
 
+# Durable local Phase 3A batch checkpoints (machine-specific runtime state)
+.phase3a/
+
